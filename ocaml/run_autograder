@@ -1,7 +1,0 @@
-#!/bin/sh
-
-# Copy testing files to student's submission
-cp -r /autograder/source/base /autograder/submission
-
-# Run autograder
-su autograder -c "./autograder" > /autograder/results/results.json

@@ -1,0 +1,5 @@
+Name,Points,Type
+public:0:add,25,public
+public:1:mk_tup,25,public
+secret:0:add,25,secret
+secret:1:mk_tup,25,secret

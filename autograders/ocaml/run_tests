@@ -1,0 +1,112 @@
+#!/bin/bash
+
+# (running as autograder)
+
+eval `opam env`
+
+# Copy submission files to testing src folder
+cp -r /autograder/submission/* /autograder/testing/src
+
+# Make the submission directory the working directory
+cd /autograder/testing
+
+# Validate the header of tests.csv
+if [ $(cat /autograder/tests.csv | head -1) != "Name,Points,Type" ]
+then
+    >&2 echo "Invalid format in tests.csv file (line 1)"
+    exit 1
+fi
+
+# Build
+dune build
+if [ $? -ne 0 ]
+then
+    >&2 echo "Error building"
+    exit 1
+fi
+
+# Print beginning of JSON data
+cat <<EOF
+{
+  "stdout_visibility": "hidden",
+  "tests": [
+EOF
+
+# Get a list of the tests
+comma=""
+lineno=2
+failed_required_tests=0
+for test in $(cat /autograder/tests.csv | tail +2)
+do
+    # Validate the line
+    if ! [[ $test =~ ^[A-Za-z0-9_]+:[0-9]+:[A-Za-z0-9_]+,[0-9]+(\.[0-9]+)?,(public|secret|required)$ ]]
+    then
+        >&2 echo "Invalid format in tests.csv (line $lineno)"
+        exit 1
+    fi
+
+    # Get the parts of the tests from the CSV line
+    fullname=$(echo $test | cut -f1 -d,)
+    name=$(echo $fullname | cut -f3 -d:)
+    num=$(echo $fullname | cut -f1-2 -d: | tr : _)
+    module=$(echo $fullname | cut -f1 -d:)
+    max_score=$(echo $test | cut -f2 -d,)
+    kind=$(echo $test | cut -f3 -d,)
+
+    # Run the test
+    ./_build/default/test/$module/$module.bc -only-test $fullname >/dev/null && result="pass" || result="fail"
+
+    # If this is a required test, set the flag
+    if [ $kind = "required" ] && [ $result = "fail" ]
+    then
+        failed_required_tests=1
+    fi
+
+    # Compute the score for this test
+    if [ $result = "fail" ]
+    then
+        score=0
+    else
+        score=$max_score
+    fi
+
+    # Compute visibility for this type of test
+    if [ $kind = "secret" ]
+    then
+        visibility="after_due_date"
+    else
+        visibility="visible"
+    fi
+    
+    # Print the results as JSON
+    cat <<EOF
+    $comma
+    {
+      "score": $score,
+      "max_score": $max_score,
+      "name": "$name",
+      "number": "$num",
+      "visibility": "$visibility"
+    }
+EOF
+
+    comma=","
+    lineno=$((lineno+1))
+done
+
+if [ $failed_required_tests -ne 0 ]
+then
+    # Print end of JSON data with score of 0
+    cat <<EOF
+  ],
+  "score": 0,
+  "output": "Did not pass all required tests."
+}
+EOF
+else
+    # Print end of JSON data
+    cat <<EOF
+  ]
+}
+EOF
+fi
