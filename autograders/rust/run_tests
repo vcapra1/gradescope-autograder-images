@@ -21,6 +21,14 @@ then
     exit 1
 fi
 
+# Build
+cargo build
+if [ $? -ne 0 ]
+then
+    >&2 echo "Error building"
+    exit 1
+fi
+
 # Print beginning of JSON data
 if [ "$dbg" == "false" ]
 then
@@ -55,9 +63,9 @@ do
     # Run the test
     if $dbg
     then
-        ruby test/$module/$module.rb --name $name
+        cargo test $module::$name -- --exact
     else
-        ruby test/$module/$module.rb --name $name >/dev/null && result="pass" || result="fail"
+        cargo test $module::$name -- --exact >/dev/null && result="pass" || result="fail"
 
         # If this is a required test, set the flag
         if [ $kind = "required" ] && [ $result = "fail" ]

@@ -29,4 +29,5 @@ WORKDIR /autograder
 # Copy the runner script into the container
 COPY run_autograder .
 COPY run_tests .
+COPY debug .
 RUN chown autograder:autograder run_tests

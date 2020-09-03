@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# (running as root)
+
+# Copy testing files to testing folder, and remove write permissions for those files
+cp -r /autograder/base /autograder/testing
+mkdir -p /autograder/testing/src
+chmod -w -R /autograder/testing
+# Make directores writable, but not files
+find /autograder/testing -type d -print0 | xargs -0 chmod a+w
+
+# Run tests
+su autograder -c 'PATH=$PATH:/home/autograder/bin:/home/autograder/.opam/default/bin ./run_tests --debug'
