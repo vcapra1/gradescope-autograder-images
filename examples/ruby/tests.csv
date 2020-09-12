@@ -1,5 +1,5 @@
-Name,Points,Type
-public:0:test_init,25,public
-public:1:test_rand,25,public
-secret:0:test_init,25,secret
-secret:1:test_rand,25,secret
+Name,Points,Type,Timeout
+public:0:test_init,25,public,30
+public:1:test_rand,25,public,30
+secret:0:test_init,25,secret,30
+secret:1:test_rand,25,secret,30

@@ -17,7 +17,7 @@ cp -r /autograder/submission/* /autograder/testing/src
 cd /autograder/testing
 
 # Validate the header of tests.csv
-if [ $(cat /autograder/tests.csv | head -1) != "Name,Points,Type" ]
+if [ $(cat /autograder/tests.csv | head -1) != "Name,Points,Type,Timeout" ]
 then
     >&2 echo "Invalid format in tests.csv file (line 1)"
     exit 1
@@ -48,7 +48,7 @@ failed_required_tests=0
 for test in $(cat /autograder/tests.csv | tail +2)
 do
     # Validate the line
-    if ! [[ $test =~ ^[A-Za-z0-9_]+:[0-9]+:[A-Za-z0-9_]+,[0-9]+(\.[0-9]+)?,(public|secret|required)$ ]]
+    if ! [[ $test =~ ^[A-Za-z0-9_]+:[0-9]+:[A-Za-z0-9_]+,[0-9]+(\.[0-9]+)?,(public|secret|required),[0-9]+$ ]]
     then
         >&2 echo "Invalid format in tests.csv (line $lineno)"
         exit 1
@@ -61,13 +61,14 @@ do
     module=$(echo $fullname | cut -f1 -d:)
     max_score=$(echo $test | cut -f2 -d,)
     kind=$(echo $test | cut -f3 -d,)
+    time_limit=$(echo $test | cut -f4 -d,)
 
     # Run the test
     if $dbg
     then
         ./_build/default/test/$module/$module.bc -only-test $fullname
     else
-        ./_build/default/test/$module/$module.bc -only-test $fullname >/dev/null && result="pass" || result="fail"
+        result=$(timeout $time_limit bash -c "./_build/default/test/$module/$module.bc -only-test $fullname >/dev/null && echo \"pass\" || echo \"fail\"" || echo "timeout")
 
         # If this is a required test, set the flag
         if [ $kind = "required" ] && [ $result = "fail" ]
@@ -75,10 +76,20 @@ do
             failed_required_tests=1
         fi
 
+        if [ $kind = "required" ] && [ $result = "timeout" ]
+        then
+            failed_required_tests=1
+        fi
+
         # Compute the score for this test
+        output=""
         if [ $result = "fail" ]
         then
             score=0
+        elif [ $result = "timeout" ]
+        then
+            score=0
+            output="timeout"
         else
             score=$max_score
         fi
@@ -99,6 +110,7 @@ do
       "max_score": $max_score,
       "name": "$name",
       "number": "$num",
+      "output": "$output",
       "visibility": "$visibility"
     }
 EOF
