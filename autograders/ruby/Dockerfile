@@ -2,7 +2,7 @@ FROM gradescope/auto-builds
 
 # Install dependencies
 RUN apt-get update
-RUN apt-get -y install make gcc libssl-dev zlib1g-dev
+RUN apt-get -y install make gcc libssl-dev zlib1g-dev bundler sqlite3 libsqlite3-dev
 
 # Create a non-priveleged user
 RUN useradd autograder -md /home/autograder
@@ -20,10 +20,11 @@ RUN bash install.sh
 RUN rbenv install 2.7.1
 RUN rbenv global 2.7.1 && rbenv rehash
 
+USER root
+
 # Install necessary gems
 RUN gem install minitest
 
-USER root
 WORKDIR /autograder
 
 # Copy the runner script into the container
