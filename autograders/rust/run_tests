@@ -59,7 +59,7 @@ do
     module=$(echo $fullname | cut -f1 -d:)
     max_score=$(echo $test | cut -f2 -d,)
     kind=$(echo $test | cut -f3 -d,)
-    time_limit=$(echo $test | cut -f3 -d,)
+    time_limit=$(echo $test | cut -f4 -d,)
 
     # Run the test
     if $dbg
