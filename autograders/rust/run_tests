@@ -22,7 +22,13 @@ then
 fi
 
 # Build
-cargo build
+if $dbg
+then
+    cargo build
+else
+    cargo build >/dev/null 2>/dev/null
+fi
+
 if [ $? -ne 0 ]
 then
     >&2 echo "Error building"
@@ -66,7 +72,7 @@ do
     then
         cargo test $module::$name -- --exact
     else
-        result=$(timeout $time_limit bash -c "cargo test $module::$name -- --exact >/dev/null && echo \"pass\" || echo \"fail\"" || echo "timeout")
+        result=$(timeout $time_limit bash -c "cargo test $module::$name -- --exact >/dev/null 2>/dev/null && echo \"pass\" || echo \"fail\"" || echo "timeout")
 
         # If this is a required test, set the flag
         if [ $kind = "required" ] && [ $result = "fail" ]
