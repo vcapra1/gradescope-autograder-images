@@ -44,6 +44,7 @@ fi
 # Get a list of the tests
 comma=""
 lineno=2
+testno=1
 failed_required_tests=0
 for test in $(cat /autograder/tests.csv | tail +2)
 do
@@ -109,7 +110,7 @@ do
       "score": $score,
       "max_score": $max_score,
       "name": "$name",
-      "number": "$num",
+      "number": "$testno",
       "output": "$output",
       "visibility": "$visibility"
     }
@@ -118,6 +119,7 @@ EOF
 
     comma=","
     lineno=$((lineno+1))
+    testno=$((testno+1))
 done
 
 if [ "$dbg" == "false" ]
