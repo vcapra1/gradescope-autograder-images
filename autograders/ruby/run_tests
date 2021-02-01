@@ -14,7 +14,7 @@ cp -r /autograder/submission/* /autograder/testing/src
 # If provided, run code re-organizer
 if [ -f "/autograder/code_organize" ]
 then
-    /autograder/code_organize
+    bash /autograder/code_organize
 fi
 
 # Make the submission directory the working directory
