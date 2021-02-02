@@ -10,7 +10,7 @@ USER autograder
 WORKDIR /home/autograder
 
 # Add rbenv to path
-ENV PATH "$PATH:/home/autograder/.rbenv/bin:/home/autograder/.rbenv/shims"
+ENV PATH "/home/autograder/.rbenv/bin:/home/autograder/.rbenv/shims:$PATH"
 
 # Install rbenv
 RUN curl -sL https://github.com/rbenv/rbenv-installer/raw/master/bin/rbenv-installer > install.sh
